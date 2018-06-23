@@ -1,0 +1,29 @@
+---
+version: '3.4'
+services:
+  web:
+    build: .
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - elixir-artifacts:/opt/elixir-artifacts
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgres://postgres@postgres/rumbl
+      - MIX_ENV=dev
+      - ELIXIR_BUILD_PATH=/opt/elixir-artifacts/_build
+      - ELIXIR_DEPS_PATH=/opt/elixir-artifacts/deps
+    command: "bin/http_start"
+
+  postgres:
+    image: mdillon/postgis:10-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+volumes:
+  postgresql-data:
+  elixir-artifacts:

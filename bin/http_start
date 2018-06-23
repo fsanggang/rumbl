@@ -1,0 +1,29 @@
+#!/bin/sh
+
+mkdir -p tmp
+
+mix deps.get
+mix compile
+
+for ENV_NAME in dev test; do
+  FILE=tmp/db_init_$ENV_NAME
+  if [ ! -f "$FILE" ]; then
+    echo "Creating and loading $ENV_NAME database"
+    MIX_ENV=$ENV_NAME mix ecto.create
+    MIX_ENV=$ENV_NAME mix ecto.load
+    touch "$FILE"
+  fi
+done
+
+echo "Running Migrations"
+for ENV_NAME in dev test; do
+  MIX_ENV=$ENV_NAME mix ecto.migrate
+done
+
+echo "Compile assets"
+cd assets && npm install
+
+cd ..
+
+echo "Start server"
+mix phx.server
